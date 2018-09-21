@@ -26,7 +26,7 @@ library(gdata)
 # SET UP DIRECTORIES AND DATA
 
 # Output directory
-outputDir <- c("C:\\Users\\Heidi\\Documents\\Information architecture project\\data analysis\\zur_360_upd_obj\\")
+outputDir <- c("C:\\Users\\Heidi\\Documents\\Information architecture project\\data analysis\\zur_360_upd_subj\\")
 
 
 # read data for both experiments (Zürich and Weimar)
@@ -40,7 +40,7 @@ curTitle <- c("Zurich_360_updated") # This title will be used in the names of fi
 
 # SELECT CURRENT Y COLUMN (x-columns are always the same)
 
-cur_y <- "objective_discrete"
+cur_y <- "subjective"
 
 xList <- c('Area', 'Perimeter', 'Compactness', 'Occlusivity', 'Min_radial','Volume','RayPortion_sky','RayPortion_obstacles', 'Betweenness_car', 'Betweenness_ped')
 curCols <- append(xList, cur_y)
@@ -83,7 +83,11 @@ draw_raw_pairs = function(outDir, fileName, dataName, scoresFactored, scoreType)
 }
 
 # REGRESSION PLOT
-draw_regression_plot = function(data, x_axis_var, y_axis_var, outDir, dataName) {
+draw_regression_plot = function(data, x_axis_var, y_axis_var, outDir) {
+  # data - dataset for drawing the plot
+  # x_axis_var / y_axis_var - x-axis variable or y-axis variable
+  # outDir - directory where plot will be saved
+  
   filePath <- paste(c(outputDir, "regression_" , x_axis_var, "_", y_axis_var, ".png"), collapse='')
   png(filePath, width = 900, height = 600, pointsize = 60)
   regressionplot = ggscatter(data, x = x_axis_var, y = y_axis_var,
@@ -103,9 +107,13 @@ draw_regression_plot = function(data, x_axis_var, y_axis_var, outDir, dataName) 
 
 # ELBOW CURVE
 
-draw_elbow = function(pca, outDir, fileName, dataName) {
-
-  filePath <- paste(c(outDir, fileName), collapse='')
+draw_elbow = function(pca, outDir, dataName) {
+  # This function draws an elbow curve (used in a pca analysis)
+  # pca - Principal component analysis object
+  # outDir - directory where the plot will be saved
+  # dataName (string) - name of the current dataset ("Zurich_360" or "Weimar_360" ) 
+  
+  filePath <- paste(c(outDir, "elbow.png"), collapse='')
   png(filePath, width = 2000, height = 1500)
   
   plotTitle <- paste(c("Elbow curve,", curTitle), collapse=" ")
@@ -118,10 +126,19 @@ draw_elbow = function(pca, outDir, fileName, dataName) {
   dev.off()
   }
 
+
+
 # PC PAIRS PLOT
 # n principal components plotted against each other with data points colored according to the current y variable values
-draw_pc_pairs = function(pca, n_components, scores_factored, score_type, outDir, fileName, dataName){
-  filePath <- paste(c(outDir, fileName), collapse='')
+draw_pc_pairs = function(pca, n_components, scores_factored, score_type, outDir, dataName){
+  # pca  - PCA object
+  # n_components - number of PCs to include in the plot
+  # scores_factored - a factor object of objective / subjective scores 
+  # score_type - string object to be used in the legend title, e.g. "objective" or "subjective"
+  # outDir (string) - directory where the plot will be saved
+  # dataName (string) - name of the current dataset ("Zurich_360" or "Weimar_360" ) 
+  
+  filePath <- paste(c(outDir, "pc_pairs.png"), collapse='')
   plotTitle <- paste(c("Matrix plot of principal components, ", dataName), collapse="")
   png(filePath, width = 3000, height = 3000, pointsize = 60)
   
@@ -142,10 +159,14 @@ draw_pc_pairs = function(pca, n_components, scores_factored, score_type, outDir,
 }
 
 
+
 # CONTRIBUTIONS PLOT & TABLE
-draw_contributions = function(pca, outDir, fileName, dataName) {
+draw_contributions = function(pca, outDir, dataName) {
+  # pca  - PCA object
+  # outDir (string) - directory where the plot will be saved
+  # dataName (string) - name of the current dataset ("Zurich_360" or "Weimar_360" ) 
   
-  filePath <- paste(c(outDir, fileName), collapse='')
+  filePath <- paste(c(outDir, "contributions_plot.png"), collapse='')
   png(filePath, width = 1000, height = 1000, pointsize = 30)
   contribPlot = fviz_pca_var(pca,labelsize = 8,
                              col.var = "contrib", # Color by contributions to the PC
@@ -159,6 +180,7 @@ draw_contributions = function(pca, outDir, fileName, dataName) {
   dev.off() 
 }
 
+
 create_contribs_table = function(pca) {
   loadings <- pca$rotation
   contribs <- sweep(x = abs(loadings), MARGIN = 2, 
@@ -169,9 +191,12 @@ create_contribs_table = function(pca) {
 
 
 # CORRELATION PLOT
-draw_corr_plot = function(pca, outDir, fileName, dataName){
+draw_corr_plot = function(pca, outDir, dataName){
+  # pca  - PCA object
+  # outDir (string) - directory where the plot will be saved
+  # dataName (string) - name of the current dataset ("Zurich_360" or "Weimar_360" ) 
 
-  filePath <- paste(c(outDir, fileName), collapse='')
+  filePath <- paste(c(outDir, "correlation_plot.png"), collapse='')
   png(filePath, width = 1000, height = 1000, pointsize = 20)
   
   var <- get_pca_var(pca)
@@ -186,6 +211,13 @@ draw_corr_plot = function(pca, outDir, fileName, dataName){
 
 # K-MEANS PAIRS PLOT
 draw_kmeans_pairs = function(data, clust_factored, data_description, n_clusters, outDir, dataName) {
+  # data (dataframe)  - data to be used
+  # clust_factored (factor) - factor containing the cluster which each data point belongs to
+  # data_description (str) - brief description of which variables are used in the clustering (used in the plot title)
+  # n_clusters (int) - number of clusters
+  # outDir (string) - directory where the plot will be saved
+  # dataName (string) - name of the current dataset ("Zurich_360" or "Weimar_360" ) 
+  
   filePath <- paste(c(outputDir, "kmeans_", data_description, ".png"), collapse='')
   png(filePath, width = 2000, height = 1500, pointsize = 30)
   
@@ -208,6 +240,14 @@ draw_kmeans_pairs = function(data, clust_factored, data_description, n_clusters,
 
 # SINGLE K-MEANS PLOT WITH DATA POINTS' COLOR DETERMINED BY CLUSTERS AND SHAPE DETERMINED BY SCORES
 draw_single_kmeans = function(x, y, data, clust_factored, scores_factored, data_description, n_clusters, outDir, dataName){
+  # x, y (str) - x and y-axis variables
+  # data (dataframe)  - data to be used
+  # clust_factored (factor) - factor containing the cluster which each data point belongs to
+  # data_description (str) - brief description of which variables are used in the clustering (used in the plot title)
+  # n_clusters (int) - number of clusters
+  # outDir (string) - directory where the plot will be saved
+  # dataName (string) - name of the current dataset ("Zurich_360" or "Weimar_360" ) 
+  
   filePath <- paste(c(outputDir, "kmeans_single_", data_description, ".png"), collapse='')
   plotTitle = paste(c(y, " vs ", x, ". K-means clustering on ", data_description, ", k=", n_clusters, ", ", dataName), collapse="")
   xdata <- data[, x]
@@ -232,7 +272,8 @@ draw_single_kmeans = function(x, y, data, clust_factored, scores_factored, data_
 
 # Calculate frequency of objective / subjective scores in each cluster
 count_scores_in_clusters = function(clust_factored, scores_factored){
-  
+  # clust_factored (factor) - factor containing the cluster which each data point belongs to
+  # scores_factored (factor) - factor containing the objective / subjective score which each data point has
   
   df_cl_sc <- data.frame(clust_factored, scores_factored) # data frame with clusters and subj./obj. scores as columns
   
@@ -287,7 +328,12 @@ count_scores_in_clusters = function(clust_factored, scores_factored){
   }
 }
 
+
+# Create a test and train dataset
 create_test_train_data = function(data, prop_train){
+  #data (dataframe) - data to use
+  # prop_train (float) - proportion of data which should be used for training
+  
   ## 75% of the sample size
   smp_size <- floor(prop_train * nrow(data))
   test_smp_size <- nrow(data) - smp_size
@@ -298,13 +344,20 @@ create_test_train_data = function(data, prop_train){
   ## Split the data into test and train data
   train_ind <- sample(seq_len(nrow(data)), size = smp_size)
   
+  
   train_data<- data[train_ind, ]
+  print(train_data)
   test_data <- data[-train_ind, ]
-  return(c(train_data, test_data))
+  print(test_data)
+  return(list(train_data, test_data))
 }
 
-# Build decision tree based on 
+# Build decision tree prediction model
 build_decision_tree = function(train_data, var_to_predict, prune){
+  #train_data (dataframe) - data for training
+  # var_to_predict (str)- variable which the decision tree is trained to predict
+  # prune (boolean) - whether the decision tree is pruned (TRUE) or not (FALSE)
+  print(train_data)
   
   ## Build the tree. https://www.r-bloggers.com/a-quick-introduction-to-machine-learning-in-r-with-caret/
   if(var_to_predict == "objective_discrete"){
@@ -326,31 +379,46 @@ build_decision_tree = function(train_data, var_to_predict, prune){
     printcp(pfit) # display the results
     return(fit1)
   }
+}
 
+# print two confusion matrices for the tree (one when tree is applied to test data from same dataset, one when applied to another dataset)
 print_conf_matrix = function(fit, test_data_same, test_data_other, var_to_predict){
-  # Confusion matrix of the tree when applied to the same data set (e.g. when a tree trained on Zürich data is applied to the Zürich test data)
-  pred_same <- predict(pfit, test_data_same, type="class")
+  # fit (rpart decision tree model object) - decision tree
+  # test_data_same (dataframe) - test data from the same dataset which the tree was trained one
+  # test_data_other (dataframe) - test data from the other dataset
+  # var_to_predict (str) - variable which tree tries to predict, ie "objective_discrete" or "subjective"
+  
+    # Confusion matrix of the tree when applied to the same data set (e.g. when a tree trained on Zürich data is applied to the Zürich test data)
+  pred_same <- predict(fit, test_data_same, type="class")
   confMat_same <- confusionMatrix(pred_same, factor(test_data_same[, var_to_predict]))
   print("Confusion matrix same:")
   print(confMat_same)
   
   # Confusion matrix of the tree when applied to the other data set (e.g. when a tree trained on Zürich data is applied to the Weimar test data)
-  pred_other <- predict(fit1, test_data_other, type = "class")
+  pred_other <- predict(fit, test_data_other, type = "class")
   confMat_other <- confusionMatrix(factor(pred_other), factor(test_data_other[,var_to_predict]))
   print("Confusion matrix other:")
   print(confMat_other)
 }
 
-plot_tree = function(tree, var_to_predict, outDir, data_description, orig_dataName)
+
+# Plot the decision tree
+plot_tree = function(fit, var_to_predict, outDir, data_description, dataName){
+  # fit (rpart decision tree object)
+  # var_to_predict (str) - variable which tree tries to predict, ie "objective_discrete" or "subjective"
+  # outDir (str) - directory where the plot will be saved
+  # data_description (str) - brief description of contents of data, to be used in plot title
+  # dataName (str) - name of original dataset, e.g. Weimar_360 or Zurich_360, to be used in plot title
+  
   # Create an image file for displaying the tree
-  fileName <- paste(c(outDir, "decision_tree_", data_description, ".png"), collapse='')
+  fileName <- paste(c(outDir, "00decision_tree_", data_description, ".png"), collapse='')
   png(fileName, width = 900, height = 600)
   
   
-  plotName <- paste(c("Original decision tree with", data_description, ", ", var_to_predict, ", ", orig_dataName), collapse = "")
+  plotName <- paste(c("Decision tree with ", data_description, ", ", var_to_predict, ", ", dataName), collapse = "")
   
   # Plot the tree
-  treeplot <- rpart.plot(tree,
+  treeplot <- rpart.plot(fit,
                          main= plotName, 
                          cex.main=1.2,
                          type = 1,
@@ -360,7 +428,7 @@ plot_tree = function(tree, var_to_predict, outDir, data_description, orig_dataNa
                          shadow.col = "gray",
                          nn = TRUE)
   print(treeplot)
-  print(summary(pfit)) # detailed summary of splits
+  print(summary(fit)) # detailed summary of splits
   dev.off()
 }
 
@@ -369,17 +437,17 @@ plot_tree = function(tree, var_to_predict, outDir, data_description, orig_dataNa
 
 # Pairs plot and regression
 draw_raw_pairs(outputDir, "pairs_plot_raw_data.png", curTitle, curScores, cur_y)
-draw_regression_plot(curData, cur_y, "RayPortion_obstacles", outputDir, curTitle)
+draw_regression_plot(curData, cur_y, "RayPortion_obstacles", outputDir)
 
 # PCA
 myPCA <- prcomp(curData[,1:10], center = T, scale = T)
 summary(myPCA)
 get_eigenvalue(X=myPCA) #http://www.sthda.com/english/wiki/eigenvalues-quick-data-visualization-with-factoextra-r-software-and-data-mining
-draw_elbow(myPCA, outputDir, "elbow.png", curTitle)
-draw_contributions(myPCA, outputDir, "contributions_plot.png", curTitle)
+draw_elbow(myPCA, outputDir, curTitle)
+draw_contributions(myPCA, outputDir, curTitle)
 create_contribs_table(myPCA)
-draw_corr_plot(myPCA, outputDir, "correlation_plot.png", curTitle)
-draw_pc_pairs(myPCA, 4, curScores, cur_y, outputDir, "pc_pairs.png", curTitle)
+draw_corr_plot(myPCA, outputDir, curTitle)
+draw_pc_pairs(myPCA, 4, curScores, cur_y, outputDir, curTitle)
 
 
 set.seed(20)
@@ -422,16 +490,18 @@ print(paste(c("entropy: ", entropy(x = pc_clusters_factored, y = curScores, meth
 print(paste(c("purity: ", purity(x = pc_clusters_factored, y = curScores)), collapse = ""))
 count_scores_in_clusters(pc_clusters_factored, curScores)
 
-tree_cols <- c("Betweenness_ped", "Min_radial","Occlusivity", "Volume", "RayPortion_sky", "Area", "objective_discrete")
+tree_cols <- c("Betweenness_ped", "Min_radial","Occlusivity", "Volume", "RayPortion_sky", "Area", cur_y)
 tree_data <- curData[, tree_cols]
 train_test_data <- create_test_train_data(tree_data, 0.75)
-train <- train_test_data[1]
-test <- train_test_data[2]
+train <- data.frame(train_test_data[1])
+test <- data.frame(train_test_data[2])
 
 other_data <- other_dataset[, tree_cols]
 
-fit1 = build_decision_tree(train, cur_y, prune = TRUE)
+fit = build_decision_tree(train, cur_y, prune = TRUE)
+print_conf_matrix(fit, test, other_data, cur_y)
 
+plot_tree(fit, cur_y, outputDir, "six select variables", curTitle)
 
 #---------------------------------------------------------
 
